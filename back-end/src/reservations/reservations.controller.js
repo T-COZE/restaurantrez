@@ -23,15 +23,15 @@ const statuses = ["booked", "canceled", "finished", "seated"]
 
 
 async function list(req, res) {
-  // get the date, req.query.date
-  const {date, mobile_number}= req.query
-  let reservations
-  if(date){
-    reservations = await service.listByDate(date)
+  const { date, mobile_number } = req.query;
+  let reservations;
+  if (date) {
+    reservations = await service.listByDate(date);
   } else if (mobile_number) {
-    reservations = await service.listByNumber(mobile_number)
+    reservations = await service.listByNumber(mobile_number);
   }
-  res.json({data: reservations})
+
+  res.json({ data: reservations });
 }
 async function create(req, res){
   const reservation = await service.create(req.body.data)
@@ -42,7 +42,7 @@ function hasValidProps(req, res, next){
   const {data= {}} = req.body
   if(!data){
     return next({
-      status: 400, message: "Requres data"
+      status: 400, message: "Requires data"
     })
   }
   validProps.forEach((property) => {
@@ -87,7 +87,7 @@ function hasValidProps(req, res, next){
 
 function isReserved(req, res, next){
   const {data} = req.body
-  if(data.status === "finshed" || data.status ==="seated"){
+  if(data.status === "finished" || data.status ==="seated"){
     return next({
       status: 400, message: "Reservations cannot be made with seated or finished status"
     })
@@ -130,6 +130,43 @@ function isValidDay(req, res, next) {
   next();
 }
 
+function validStatus(req, res, next){
+  const {status} = req.body.data
+  if(statuses.includes(status)){
+   status =res.locals.status  
+   next()
+  } else {
+    next({
+      status: 400, message: "Status not accepted.  Status must be: 'booked', 'seated', or 'finished."
+    })
+  }
+}
+
+async function reservationExists(req, res, next){
+  const {reservation_id}= req.params
+  const reservation = await service.read(reservation_id)
+  if(reservation){
+    res.locals.reservation = reservation
+    return next()
+  }
+  next({
+    status:404, message: `Reservation ${reservation_id? reservation_id: ""} Not Found`
+  })
+}
+
+function unfinished(req, res, next){
+  const {reservation_id} = req.params
+  const status = res.locals.reservation.status
+
+  if(status === "finished"){
+    return next({
+      status: 400, message: `This reservation ${reservation_id} is in the past.  We cannot time travel in 2035!`
+    })
+  }
+  next()
+ }
+
+
 async function update(req, res, next) {
   const updated = {
     ...req.body.data,
@@ -150,64 +187,40 @@ service.update(changed)
 
 }
 
-function validStatus(req, res, next){
-  const {status} = req.body.data
-  if(statuses.includes(status)){
-   status =res.locals.status  
-   next()
-  } else {
-    next({
-      status: 400, message: "Status not accepted.  Status must be: 'booked', 'seated', or 'finished."
-    })
-  }
+
+
+function read(req, res) {
+  res.json({ data: res.locals.reservation });
 }
 
-async function read(_req, res, _next){
-  res.json({data: res.locals.reservation})
-}
 
-async function reservationExists(req, res, _next){
-  const {reservation_id}= req.params
-  const reservation = await service.read(reservation_id)
-  if(reservation){
-    res.locals.reservation = reservation
-    return next()
-  }
-  next({
-    status:404, message: `Reservation ${reservation_id? reservation_id: ""} Not Found`
-  })
-}
 
- function unfinished(req, res, next){
-  const {reservation_id} = req.params
-  const status = res.locals.reservation.status
 
-  if(status === "finished"){
-    return next({
-      status: 400, message: `This reservation ${reservation_id} is in the past.  We cannot time travel in 2035!`
-    })
-  }
-  next()
- }
 
 
 
 module.exports = {
+  create: [
+hasValidProps, 
+isValidDay,
+isReserved, 
+asyncErrorBoundary(create),
+],
   list: [asyncErrorBoundary(list)],
   read: [asyncErrorBoundary(reservationExists), read],
-  updatae: [asyncErrorBoundary(update),
+  update: [asyncErrorBoundary(update),
   asyncErrorBoundary(reservationExists),
 hasValidProps,
 ],
-create: [asyncErrorBoundary(create),
-hasValidProps, isValidDay,isReserved
-],
+
 update: [asyncErrorBoundary(reservationExists),
 hasValidProps,
 asyncErrorBoundary(update)],
-changeStatus: [asyncErrorBoundary(reservationExists),
-validStatus,
-unfinished,
-asyncErrorBoundary(changeStatus)],  
+changeStatus: [
+  asyncErrorBoundary(reservationExists),
+  validStatus,
+  unfinished,
+  asyncErrorBoundary(changeStatus),
+],
 
 };

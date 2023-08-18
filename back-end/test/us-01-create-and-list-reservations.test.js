@@ -44,12 +44,13 @@ describe("US-01 - Create and list reservations", () => {
   });
 
   describe("POST /reservations", () => {
+    //console.log("post test")
     test("returns 400 if data is missing", async () => {
       const response = await request(app)
         .post("/reservations")
         .set("Accept", "application/json")
         .send({ datum: {} });
-
+//console.log("line 52",response.body.error)
       expect(response.body.error).toBeDefined();
       expect(response.status).toBe(400);
     });
