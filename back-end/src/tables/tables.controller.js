@@ -161,7 +161,7 @@ function validTable(req, res, next) {
   if (table.reservation_id !== null) {
     return next({
       status: 400,
-      message: " Occupied!",
+      message: "occupied!",
     });
   }
   next();

@@ -18,7 +18,7 @@ function ReservationForm({ form, submitHandler, changeHandler }) {
       <label htmlFor="last_name">
         Last Name:
         <input
-          className="last_name"
+         className="form-control my-2"
           placeholder="Last"
           name="last_name"
           type="text"
@@ -29,7 +29,7 @@ function ReservationForm({ form, submitHandler, changeHandler }) {
         Mobile Number:
         <input
           type="text"
-          className="mobile_number"
+          className="form-control my-2"
           placeholder="(***)-***-****"
           onChange={changeHandler}
         />
@@ -37,8 +37,10 @@ function ReservationForm({ form, submitHandler, changeHandler }) {
       <label htmlFor="reservation_date">
         Reservation Date:
         <input
-          className="reservation_date"
+          className="form-control my-2"
           type="date"
+          name="reservation_date"
+          value={form.reservation_date}
           placeholder="YYYY-MM-DD"
           pattern="\d{4}-\d{2}-\d{2}"
           onChange={changeHandler}
@@ -47,7 +49,10 @@ function ReservationForm({ form, submitHandler, changeHandler }) {
       <label htmlFor="reservation_time">
         Reservation Time:
         <input
+            className="form-control my-2"
           type="time"
+          name="reservation_time"
+          value={form.reservation_time}
           placeholder="HH:MM"
           pattern="[0-9]{2}:[0-9]{2}"
           onChange={changeHandler}
@@ -56,18 +61,15 @@ function ReservationForm({ form, submitHandler, changeHandler }) {
       <label htmlFor="people">
         Party Size:
         <input
-          className="party_size"
-          type="number"
+          className="form-control my-2"
+          name="people"
+          value={form["people"]}
           min={1}
-          placeholder="minimum 1"
+          placeholder={1}
+          type="number"
           onChange={changeHandler}
-        />
+          />
       </label>
-      {/* Time of reservation:
-Number of people in the party, which must be at least 1 person.
-display a Submit button that, when clicked, saves the new reservation, then displays the /dashboard page for the date of the new reservation
-display a Cancel button that, when clicked, returns the user to the previous page
-display any error messages returned from the API */}
       <div>
         <button className="btn btn-success" type="submit">
           Submit
