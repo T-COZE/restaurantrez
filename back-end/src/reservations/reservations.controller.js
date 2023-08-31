@@ -109,7 +109,9 @@ function isValidDay(req, res, next) {
         "Reservations can only be created on a future date, excluding Tuesdays",
     });
   }
+  console.log(reservationDate, new Date())
   if (reservationDate < new Date()) {
+    console.log("caught future date issue")
     return next({
       status: 400,
       message: "Reservations can only be created on a future date",

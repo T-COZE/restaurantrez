@@ -32,7 +32,7 @@ function ReservationForm({ form, handleChange, handleSubmit }) {
    className="form-control my-2" 
    name="mobile_number" 
    value={form["mobile_number"]} 
-   pattern="^[0-9 -]+$}" 
+   pattern="^[0-9\s()\-.]+$" 
    onChange={handleChange}
    />
       </label>
